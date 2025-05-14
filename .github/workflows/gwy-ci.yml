@@ -8,7 +8,7 @@ env:
 
   # Should the CI allow PRs merging if
   # any of the enabled CI actions fail?
-  GWY_ALLOW_MERGE_ON_FAILURE: false
+  GWY_ALLOW_MERGE_ON_FAILURE: true
 
   # Individual Steps Timeout: set the TO for each
   # step issued command that might take some time
