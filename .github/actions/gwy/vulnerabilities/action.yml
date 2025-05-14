@@ -1,0 +1,152 @@
+name: 'Vulnerabilities Scan'
+description: 'Scans for vulnerabilities in branch'
+
+outputs:
+  result:
+    description: 'Result of the action (success or failed)'
+    value: ${{ steps.check-vulnerabilities.outputs.result }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Initialize Vulnerabilities Scanning Environment
+      shell: bash
+      run: |
+        # Initialize Vulnerabilities Scanning Environment
+        GWY_SUMMARY=$RUNNER_TEMP/vulnerabilities-summary.txt
+        echo -e "## Vulnerabilities Scan" >> $GWY_SUMMARY
+
+        echo "GWY_SUMMARY=$GWY_SUMMARY" >> $GITHUB_ENV
+        echo "GWY_VULNERABILITIES_COUNT=0" >> $GITHUB_ENV
+        echo "GWY_ARTIFACT=$RUNNER_TEMP/vulnerabilities-report.md" >> $GITHUB_ENV
+
+        # set annotations reusable title        
+        echo "GWY_TITLE=vulnerabilities scan" >> $GITHUB_ENV        
+        
+        sync
+
+    - name: Install govulncheck
+      run: |
+        # Installing govulncheck for Vulnerabilities Scanning
+        go install golang.org/x/vuln/cmd/govulncheck@latest
+      shell: bash
+
+    - name: Check Vulnerabilities
+      id: check-vulnerabilities
+      shell: bash --noprofile --norc +e -o pipefail {0}
+      run: |
+        # Check Code Vulnerabilities
+        timeout $GWY_TIMEOUT_SECONDS govulncheck ./... | grep -v "show verbose" |
+          grep -v "Symbol Results" > $GWY_ARTIFACT
+        
+        # process found vulnerabilities IDs
+        GWY_VULNERABILITIES_FOUND=$(cat $GWY_ARTIFACT | grep 'Vulnerability #')
+        
+        # process found vulnerabilities count
+        if [ -z "$GWY_VULNERABILITIES_FOUND" ]; then
+          GWY_VULNERABILITIES_COUNT=0
+        else
+          GWY_VULNERABILITIES_COUNT=$(echo "$GWY_VULNERABILITIES_FOUND" | wc -l)
+        fi
+        
+        # set action result based on vulnerabilities count
+        if [ "$GWY_VULNERABILITIES_COUNT" -ne 0 ]; then
+          echo "result=failed" >> $GITHUB_OUTPUT
+        else
+          echo "result=success" >> $GITHUB_OUTPUT
+        fi
+        
+        # enhance vulnerabilities summary section, annotations, and debug output
+        if [ $GWY_VULNERABILITIES_COUNT -ne 0 ]; then
+          # add found vulnerabilities annotation
+          echo "::error title=$GWY_TITLE: $GWY_VULNERABILITIES_COUNT VULNERABILITIES FOUND::check summary or artifact report for more details"
+        
+          # add found vulnerabilities to debug output
+          echo "$GWY_VULNERABILITIES_FOUND"
+        
+          # Repository URL using GitHub context
+          GWY_REPO_URL="https://github.com/${GITHUB_REPOSITORY}"
+        
+          # Variables for parsing
+          current_vuln_id=""
+          current_vuln_link=""
+        
+          # Parse vulnerabilities and generate Markdown
+          while IFS= read -r line; do
+            # Match "Vulnerability #X: ID"
+            if [[ "$line" =~ Vulnerability\ #[0-9]+:\ (GO-[0-9-]+) ]]; then
+              current_vuln_id="${BASH_REMATCH[1]}"
+              # Add a blank line before new vuln ID (except first one)
+              if [ -s "$GWY_SUMMARY" ]; then
+                echo "" >> "$GWY_SUMMARY"
+              fi
+            fi
+        
+            # Match "More info" link and write header without colon
+            if [[ "$line" =~ More\ info:\ (https://pkg.go.dev/vuln/GO-[0-9-]+) ]]; then
+              current_vuln_link="${BASH_REMATCH[1]}"
+              echo "[${current_vuln_id}](${current_vuln_link})" >> "$GWY_SUMMARY"
+            fi
+        
+            # Match "Example traces found" lines
+            if [[ "$line" =~ ^[[:space:]]*#[0-9]+:[[:space:]]*([^:]+):([0-9]+):([0-9]+):[[:space:]]*(.*)$ ]]; then
+              file_path="${BASH_REMATCH[1]}"
+              line_num="${BASH_REMATCH[2]}"
+              col_num="${BASH_REMATCH[3]}"
+              call_trace="${BASH_REMATCH[4]}"
+        
+              # Strip directory path, keep only filename
+              file_name=$(basename "$file_path")
+        
+              # Construct GitHub URL to the specific line (full path still needed for link)
+              file_url="${GWY_REPO_URL}/blob/${GWY_BRANCH}/${file_path}#L${line_num}"
+        
+              # Write the formatted Markdown line with just filename, no line/column
+              echo " - [${file_name}](${file_url}): \`${call_trace}\`" >> "$GWY_SUMMARY"
+            fi
+          done < "$GWY_ARTIFACT"
+        
+        else
+          # add not found vulnerabilities annotation
+          echo "::notice title=$GWY_TITLE::no vulnerabilities found in codebase"
+        
+          # add not found vulnerabilities to action summary
+          echo " - no vulnerabilities detected" >> "$GWY_SUMMARY"
+        fi
+        
+        cat $GWY_SUMMARY >> $GITHUB_STEP_SUMMARY
+        
+        # append to artifact vulnerabilities scan output
+        
+        echo -e "\n\n## Vulnerabilities Scan Output\n\n\`\`\`" >> $GWY_SUMMARY
+        cat $GWY_ARTIFACT >> $GWY_SUMMARY
+        echo -e "\`\`\`\n" >> $GWY_SUMMARY
+        
+        cat $GWY_SUMMARY_HEADING > $GWY_ARTIFACT
+        cat $GWY_SUMMARY >> $GWY_ARTIFACT
+
+    - name: Upload Vulnerability Report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: vulnerabilities-report
+        path: ${{ env.GWY_ARTIFACT }}
+      continue-on-error: true
+
+    - name: Step Clean-Up
+      if: always()
+      shell: bash
+      run: |
+        # Vulnerabilities Scanning Clean-Up
+        rm -f $GWY_ARTIFACT
+        rm -f $GWY_SUMMARY
+        
+        # unset variables
+        unset GWY_TITLE
+        unset GWY_SUMMARY
+        unset GWY_ARTIFACT
+        unset GWY_REPO_URL
+        unset GWY_PIPELINE_STATUS
+        unset GWY_TIMEOUT_SECONDS
+        unset GWY_VULNERABILITIES_COUNT
+        unset GWY_VULNERABILITIES_FOUND
