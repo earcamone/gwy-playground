@@ -30,7 +30,7 @@ func setupRouter(c config.Config, errFn errorscheme.ErrResponseFn) http.Handler 
 
 	r.Use(errorscheme.ErrorScheme(errFn))
 	r.Mount("/", Books(c))
-	
+
 	return r
 }
 
