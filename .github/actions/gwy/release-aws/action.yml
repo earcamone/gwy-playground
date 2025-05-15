@@ -83,12 +83,24 @@ runs:
             echo "**ERROR**: ECR repository '$GWY_RELEASE_REPOSITORY' does not exist and auto-creation is disabled" >> $GWY_SUMMARY
             exit 0
           fi
+        
           IMMUTABILITY=$([[ "$GWY_REPO_IMMUTABLE" == "true" ]] && echo "IMMUTABLE" || echo "MUTABLE")
+        
           AWS_ECR_CREATE=$(aws ecr create-repository --region "$AWS_REGION" --repository-name "$GWY_RELEASE_REPOSITORY" --image-scanning-configuration scanOnPush=true --image-tag-mutability "$IMMUTABILITY" 2>&1)
+          AWS_ECR_CREATE_RESULT=$?
+
           echo "RAN_AWS_ECR_CREATE=true" >> $GITHUB_ENV
           echo "AWS_ECR_CREATE<<EOF" >> $GITHUB_ENV
           echo "$AWS_ECR_CREATE" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+        
+          if [ $AWS_ECR_CREATE_RESULT -ne 0 ]; then
+            echo "Failed to create ECR repository '$GWY_RELEASE_REPOSITORY': $AWS_ECR_CREATE" >&2
+            echo "result=failed" >> $GITHUB_OUTPUT
+            echo "::error title=Repository Creation Failed::Failed to create ECR repository '$GWY_RELEASE_REPOSITORY': $AWS_ECR_CREATE"
+            echo "**ERROR**: Failed to create ECR repository '$GWY_RELEASE_REPOSITORY': $AWS_ECR_CREATE" >> $GWY_SUMMARY
+            exit 0
+          fi
         fi
         
         # Login to ECR
