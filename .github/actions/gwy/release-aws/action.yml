@@ -35,14 +35,14 @@ runs:
         echo "AWS_REGION=$AWS_REGION" >> $GITHUB_ENV
         
         # Validate required symbols
-        if [ -z "$GWY_RELEASE_TOKEN" ] || [ -z "$GWY_RELEASE_REPOSITORY" ]; then
+        if [ -z "$GWY_RELEASE_TOKENX" ] || [ -z "$GWY_RELEASE_REPOSITORYX" ]; then
           echo "Missing environment symbols for '${{ github.event.inputs.environment }}'" >&2
           echo "result=failed" >> $GITHUB_OUTPUT
           echo "::error title=Missing Symbols::Missing required AWS symbols (token or repository) for environment '${{ github.event.inputs.environment }}'."
 
           # save release specific error for later summary report section
           echo "GWY_RELEASE_ERROR<<EOF" >> $GITHUB_ENV
-          echo -e "Missing AWS symbols for '${{ github.event.inputs.environment }}'" >> $GITHUB_ENV
+          echo -e "Missing AWS symbol 'GWY_RELEASE_TOKEN' or 'GWY_RELEASE_REPOSITORY' for environment '${{ github.event.inputs.environment }}'" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV        
           exit 0
         fi
