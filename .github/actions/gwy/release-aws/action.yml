@@ -68,7 +68,7 @@ runs:
         
           # save release specific error for later summary report section
           echo "GWY_RELEASE_ERROR<<EOF" >> $GITHUB_ENV
-          echo -e "Invalid repository for '${{ github.event.inputs.environment }}' environment, must be alphanumeric with dashes/underscores" >> $GITHUB_ENV
+          echo -e "Invalid repository name (${GWY_RELEASE_REPOSITORY}) for '${{ github.event.inputs.environment }}' environment, must be alphanumeric with dashes/underscores" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV        
           exit 0
         fi
