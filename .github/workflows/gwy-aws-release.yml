@@ -75,7 +75,7 @@ env:
   # Create application repository if un-existent?
   # Set true if you want the workflow to create
   # the ECR repository for app if un-existent.
-  GWY_REPO_CREATE: true
+  GWY_REPO_CREATE: false
 
   # Application repository creation properties:
   # If app ECR repository is un-existent and

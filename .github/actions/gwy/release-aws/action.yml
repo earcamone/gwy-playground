@@ -40,8 +40,10 @@ runs:
           echo "result=failed" >> $GITHUB_OUTPUT
           echo "::error title=Missing Symbols::Missing required AWS symbols (token or repository) for environment '${{ github.event.inputs.environment }}'."
 
-          echo -e "## Application Release (AWS/ECR)\n" >> $GWY_RELEASE_SUMMARY      
-          echo -e "- \`  ERROR\`: Missing AWS symbols for '${{ github.event.inputs.environment }}'" >> $GWY_SUMMARY
+          # save release specific error for later summary report section
+          echo "GWY_RELEASE_ERROR<<EOF" >> $GITHUB_ENV
+          echo -e "Missing AWS symbols for '${{ github.event.inputs.environment }}'" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV        
           exit 0
         fi
 
@@ -51,8 +53,10 @@ runs:
           echo "result=failed" >> $GITHUB_OUTPUT
           echo "::error title=Invalid 'GWY_TOKEN_AWS' Token Format::token must be in 'key:secret' format for '${{ github.event.inputs.environment }}'."
         
-          echo -e "## Application Release (AWS/ECR)\n" >> $GWY_RELEASE_SUMMARY      
-          echo -e "- \`  ERROR\`: Invalid token format for '${{ github.event.inputs.environment }}'" >> $GWY_SUMMARY
+          # save release specific error for later summary report section
+          echo "GWY_RELEASE_ERROR<<EOF" >> $GITHUB_ENV
+          echo -e "Invalid token format for '${{ github.event.inputs.environment }}'" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV        
           exit 0
         fi
 
@@ -62,8 +66,10 @@ runs:
           echo "result=failed" >> $GITHUB_OUTPUT
           echo "::error title=Invalid Repository Format::repository must be alphanumeric with dashes/underscores for environment '${{ github.event.inputs.environment }}'."
         
-          echo -e "## Application Release (AWS/ECR)\n" >> $GWY_RELEASE_SUMMARY      
-          echo -e "- \`  ERROR\`: Invalid repository format for '${{ github.event.inputs.environment }}'" >> $GWY_SUMMARY
+          # save release specific error for later summary report section
+          echo "GWY_RELEASE_ERROR<<EOF" >> $GITHUB_ENV
+          echo -e "Invalid repository format for '${{ github.event.inputs.environment }}'" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV        
           exit 0
         fi
 
@@ -87,8 +93,10 @@ runs:
             echo "result=failed" >> $GITHUB_OUTPUT
             echo "::error title=Repository Missing::ECR repository '$GWY_RELEASE_REPOSITORY' does not exist and auto-creation is disabled."
         
-            echo -e "## Application Release (AWS/ECR)\n" >> $GWY_RELEASE_SUMMARY      
-            echo -e "- \`  ERROR\`: ECR repository '$GWY_RELEASE_REPOSITORY' does not exist and auto-creation is disabled" >> $GWY_SUMMARY
+            # save release specific error for later summary report section
+            echo "GWY_RELEASE_ERROR<<EOF" >> $GITHUB_ENV
+            echo -e "ECR repository '${GWY_RELEASE_REPOSITORY}' does not exist and auto-creation is disabled" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV        
             exit 0
           fi
         
@@ -107,8 +115,10 @@ runs:
             echo "result=failed" >> $GITHUB_OUTPUT
             echo "::error title=Repository Creation Failed::Failed to create ECR repository '$GWY_RELEASE_REPOSITORY': $AWS_ECR_CREATE"
         
-            echo -e "## Application Release (AWS/ECR)\n" >> $GWY_RELEASE_SUMMARY      
-            echo -e "- \`  ERROR\`: Failed to create ECR repository '$GWY_RELEASE_REPOSITORY', check command output in artifact evidence." >> $GWY_SUMMARY
+            # save release specific error for later summary report section
+            echo "GWY_RELEASE_ERROR<<EOF" >> $GITHUB_ENV
+            echo -e "Failed to create ECR repository '${GWY_RELEASE_REPOSITORY}', check evidence artifact for command output" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV        
             exit 0
           fi
         fi
@@ -122,8 +132,10 @@ runs:
           echo "result=failed" >> $GITHUB_OUTPUT
           echo "::error title=release to aws/ecr error::could not retrieve AWS account ID, please ensure credentials secrets is valid"
         
-          echo -e "## Application Release (AWS/ECR)\n" >> $GWY_RELEASE_SUMMARY      
-          echo -e "- \`  ERROR\`: Failed to get AWS Account ID" >> $GWY_SUMMARY
+          # save release specific error for later summary report section
+          echo "GWY_RELEASE_ERROR<<EOF" >> $GITHUB_ENV
+          echo -e "Error retrieving AWS account ID, check evidence artifact for command output" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV        
           exit 0
         fi
         echo "AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID" >> $GITHUB_ENV
@@ -141,8 +153,10 @@ runs:
           echo "result=failed" >> $GITHUB_OUTPUT
           echo "::error title=release to aws/ecr error::failed to authenticate with ECR! Check artifact 'release-report' for details"
         
-          echo -e "## Application Release (AWS/ECR)\n" >> $GWY_RELEASE_SUMMARY      
-          echo -e "- \`  ERROR\`: ECR login failed! Check command output in artifact evidence" >> $GWY_SUMMARY
+          # save release specific error for later summary report section
+          echo "GWY_RELEASE_ERROR<<EOF" >> $GITHUB_ENV
+          echo -e "ECR login error, check evidence artifact for command output" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
           exit 0
         fi
         
@@ -163,8 +177,10 @@ runs:
           echo "result=failed" >> $GITHUB_OUTPUT
           echo "::error title=release to aws/ecr error::Docker build failed! Check artifact 'release-report' for details"
         
-          echo -e "## Application Release (AWS/ECR)\n" >> $GWY_RELEASE_SUMMARY      
-          echo -e "- \`  ERROR\`: Build failed! Check artifact 'release-report'" >> $GWY_SUMMARY
+          # save release specific error for later summary report section
+          echo "GWY_RELEASE_ERROR<<EOF" >> $GITHUB_ENV
+          echo -e "Error building Dockerfile, check evidence artifact for command output" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
           exit 0
         fi
         
@@ -188,14 +204,16 @@ runs:
           echo "EOF" >> $GITHUB_ENV
         
           if [ $? -eq 0 ]; then
-            echo "Push succeeded for tag: $TAG" >&2
+            echo "Image pushed with tag: $TAG" >&2
           else
             echo "Docker push failed for tag: $TAG" >&2
             echo "result=failed" >> $GITHUB_OUTPUT
             echo "::error title=release to aws/ecr error::Docker push to ECR failed for tag '$TAG'! Check artifact 'release-report' for details"
         
-            echo -e "## Application Release (AWS/ECR)\n" >> $GWY_RELEASE_SUMMARY      
-            echo -e "- \`  ERROR\`: Push failed for tag '$TAG'! Check artifact 'release-report'" >> $GWY_SUMMARY
+            # save release specific error for later summary report section
+            echo "GWY_RELEASE_ERROR<<EOF" >> $GITHUB_ENV
+            echo -e "Error pushing image with tag '${TAG}', check evidence artifact for command output" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
             exit 0
           fi
         done
@@ -204,7 +222,7 @@ runs:
         echo "::notice title=release to aws/ecr error::image successfully pushed with tag: $GWY_RELEASE_TAG"
 
     - name: Generate Release Summary
-      if: steps.release-aws.outputs.result == 'success'
+      if: always()
       shell: bash
       run: |
         # Generate Release Summary
@@ -213,17 +231,21 @@ runs:
         
         echo -e "## Application Release (AWS/ECR)\n" >> $GWY_RELEASE_SUMMARY
         
-        IFS=',' read -ra TAGS <<< "$GWY_RELEASE_TAG"
-        for TAG in "${TAGS[@]}"; do
-          FULL_TAG="https://${AWS_ACCOUNT_ID:-unknown}.dkr.ecr.${AWS_REGION:-unknown}.amazonaws.com/$GWY_RELEASE_REPOSITORY:$TAG"
-          echo -e " - \`    Tag\`: $TAG" >> $GWY_RELEASE_SUMMARY
-          echo -e " - \`Account\`: [${AWS_ACCOUNT_ID:-unknown}](https://${AWS_REGION:-unknown}.console.aws.amazon.com/ecr/repositories?region=${AWS_REGION:-unknown})" >> $GWY_RELEASE_SUMMARY
-          echo -e " - \` Region\`: ${AWS_REGION:-unknown}" >> $GWY_RELEASE_SUMMARY
-          echo -e " - \`   Repo\`: [$GWY_RELEASE_REPOSITORY](https://${AWS_REGION:-unknown}.console.aws.amazon.com/ecr/repositories/private/${AWS_ACCOUNT_ID:-unknown}/$GWY_RELEASE_REPOSITORY?region=${AWS_REGION:-unknown})" >> $GWY_RELEASE_SUMMARY
-          echo -e " - \`    URL\`: [$FULL_TAG]($FULL_TAG)" >> $GWY_RELEASE_SUMMARY
-          echo -e "" >> $GWY_RELEASE_SUMMARY
-        done
-        sync
+        if [ "${{ steps.release-aws.outputs.result }}" == "success" ]; then
+          IFS=',' read -ra TAGS <<< "$GWY_RELEASE_TAG"
+          for TAG in "${TAGS[@]}"; do
+            FULL_TAG="https://${AWS_ACCOUNT_ID:-unknown}.dkr.ecr.${AWS_REGION:-unknown}.amazonaws.com/$GWY_RELEASE_REPOSITORY:$TAG"
+            echo -e " - \`    Tag\`: $TAG" >> $GWY_RELEASE_SUMMARY
+            echo -e " - \`Account\`: [${AWS_ACCOUNT_ID:-unknown}](https://${AWS_REGION:-unknown}.console.aws.amazon.com/ecr/repositories?region=${AWS_REGION:-unknown})" >> $GWY_RELEASE_SUMMARY
+            echo -e " - \` Region\`: ${AWS_REGION:-unknown}" >> $GWY_RELEASE_SUMMARY
+            echo -e " - \`   Repo\`: [$GWY_RELEASE_REPOSITORY](https://${AWS_REGION:-unknown}.console.aws.amazon.com/ecr/repositories/private/${AWS_ACCOUNT_ID:-unknown}/$GWY_RELEASE_REPOSITORY?region=${AWS_REGION:-unknown})" >> $GWY_RELEASE_SUMMARY
+            echo -e " - \`    URL\`: [$FULL_TAG]($FULL_TAG)" >> $GWY_RELEASE_SUMMARY
+            echo -e "" >> $GWY_RELEASE_SUMMARY
+          done
+        
+        else
+            echo -e " - \`  ERROR\`: $GWY_RELEASE_ERROR" >> $GWY_RELEASE_SUMMARY        
+        fi
         
         cat $GWY_RELEASE_SUMMARY >> $GITHUB_STEP_SUMMARY
 
