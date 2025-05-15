@@ -1,0 +1,118 @@
+name: 'Code Linting Scan'
+description: 'Checks Go code with golangci-lint and optionally creates a PR with fixes'
+
+inputs:
+  token:
+    description: 'Repository token for PR creation (required if create-pr is true)'
+    required: false
+
+outputs:
+  result:
+    description: 'Result of the linting check (success or failed)'
+    value: ${{ steps.check-golint.outputs.result }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Initialize Lint Check Environment
+      shell: bash
+      run: |
+        GWY_SUMMARY=$RUNNER_TEMP/lint-summary.txt
+        echo -e "## Linting Scan" >> $GWY_SUMMARY
+        
+        # set annotations reusable title
+        echo "GWY_TITLE=code linting check" >> $GITHUB_ENV
+        
+        echo "GWY_LINT_ISSUES=0" >> $GITHUB_ENV
+        echo "GWY_SUMMARY=$GWY_SUMMARY" >> $GITHUB_ENV
+        echo "GWY_BRANCH=$(git branch --show-current)" >> $GITHUB_ENV
+        echo "GWY_ARTIFACT=$RUNNER_TEMP/lint-report.md" >> $GITHUB_ENV
+
+    - name: Install golangci-lint
+      shell: bash
+      run: |
+        # Install golangci-lint
+        
+        # Go is already set up, just install golangci-lint
+        curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.61.0
+        export PATH="$(go env GOPATH)/bin:$PATH"
+        
+        # Verify installation
+        golangci-lint --version
+
+    - name: Check Linting Issues
+      id: check-golint
+      shell: bash --noprofile --norc +e -o pipefail {0}
+      continue-on-error: true
+      run: |
+        # Check code linting issues 
+        golangci-lint run --out-format=line-number --timeout=${{ env.GWY_TIMEOUT_SECONDS }}s --issues-exit-code=0 > ${{ env.GWY_ARTIFACT }} 2>&1
+        
+        # Parse linting issues count
+        GWY_LINT_ISSUES=$(grep -E '[^/]+\.go:[0-9]+:' ${{ env.GWY_ARTIFACT }} | wc -l)
+        echo "GWY_LINT_ISSUES=$GWY_LINT_ISSUES" >> $GITHUB_ENV
+
+        if [ $GWY_LINT_ISSUES -ne 0 ]; then
+          # Set step result
+          echo "result=failed" >> $GITHUB_OUTPUT
+
+          # Add linting issues count annotation
+          echo "::error title=$GWY_TITLE: $GWY_LINT_ISSUES ISSUES FOUND!::check summary or artifact report for more details"
+
+          # Parse lint output and generate summary with links
+          awk '
+            /^[a-zA-Z0-9\/_-]+\.go:[0-9]+:[0-9]+:/ {
+              split($1, parts, ":")
+              full_file = parts[1]
+              line = parts[2]
+              # Extract just the filename (strip path)
+              split(full_file, path_parts, "/")
+              file = path_parts[length(path_parts)]
+              # Extract description, remove backticks and trailing parentheses
+              desc = substr($0, index($0, ": ") + 2)
+              gsub(/`/, "", desc)
+              sub(/ \([^)]+\)$/, "", desc)  # Remove trailing (text)
+              # Generate Markdown
+              printf "  - [%s](https://github.com/%s/blob/%s/%s#L%s): `%s`\n", file, "'"$GITHUB_REPOSITORY"'", "'"$GWY_BRANCH"'", full_file, line, desc >> "'"$GWY_SUMMARY"'"
+            }
+          ' ${{ env.GWY_ARTIFACT }}
+        
+        else
+          # Set step result
+          echo "result=success" >> $GITHUB_OUTPUT
+
+          # Generate successful summary and annotation
+          echo "::notice title=$GWY_TITLE::no linting issues found in codebase"
+          echo "  - no linting issues detected" >> $GWY_SUMMARY
+        fi
+
+        cat $GWY_SUMMARY >> $GITHUB_STEP_SUMMARY
+
+        # append to artifact secrets scan output
+        echo -e "\n\n## Linting Scan Output\n\n\`\`\`" >> $GWY_SUMMARY
+        cat $GWY_ARTIFACT >> $GWY_SUMMARY
+        echo -e "\`\`\`\n" >> $GWY_SUMMARY
+        
+        cat $GWY_SUMMARY_HEADING > $GWY_ARTIFACT
+        cat $GWY_SUMMARY >> $GWY_ARTIFACT
+
+    - name: Upload Lint Report Artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      continue-on-error: true
+      with:
+        name: lint-report
+        path: ${{ env.GWY_ARTIFACT }}
+
+    - name: Step Clean-Up
+      if: always()
+      shell: bash
+      run: |
+        rm -f $GWY_ARTIFACT
+        rm -f $GWY_SUMMARY
+        
+        unset GWY_TITLE
+        unset GWY_BRANCH
+        unset GWY_SUMMARY
+        unset GWY_ARTIFACT
+        unset GWY_LINT_ISSUES

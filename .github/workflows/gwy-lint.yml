@@ -1,0 +1,78 @@
+name: 'GWY/Run: Linting Scan'
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch'
+        required: true
+
+      go-version:
+        description: 'Go version'
+        required: true
+        default: '<CURRENT>'
+
+      timeout:
+        description: 'Timeout per step'
+        type: string
+        default: '5m'
+
+run-name: "[${{ github.workflow }}] @${{ github.actor }}"
+
+jobs:
+  gwy-golint:
+    name: code linting scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set Branch
+        run: |
+          # Setting Workflow Main Configuration
+          
+          # fail fast if client forgot to configure GWY repo token
+          
+          if [ "${{ secrets.GWY_TOKEN_REPO }}" = "" ]; then
+            echo "::error title=configuration error::missing GWY_TOKEN_REPO repo access secret, please check installation section in documentation"
+            exit 1
+          fi
+
+          # process target workflow branch 
+          echo "BRANCH=${{ inputs.branch }}" >> $GITHUB_ENV
+
+      - name: GWY Bootstrapping Validations
+        run: |
+          if [ -z "${{ secrets.GWY_TOKEN_REPO }}" ]; then
+            echo "::error title=Mandatory repository token not configured::mandatory secret 'GWY_TOKEN_REPO' seems to be empty, kindly check GWY configuration documentation"
+            exit 1
+          fi
+          
+          if ! git ls-remote --exit-code https://x-access-token:${{ secrets.GWY_TOKEN_REPO }}@github.com/${{ github.repository }} "refs/heads/$BRANCH" "refs/tags/$BRANCH" > /dev/null; then
+            echo "::error title=Could not find workflow target branch::could not find branch or tag with name '$BRANCH', kindly provide a valid branch name."
+            exit 1
+          fi
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ env.BRANCH }}
+          token: ${{ secrets.GWY_TOKEN_REPO }}
+
+      - name: Setup Environment
+        uses: ./.github/actions/gwy/setup
+        with:
+          timeout: ${{ inputs.timeout }}
+          go-version: ${{ inputs.go-version }}
+
+      - name: Run Linting Check
+        id: check-linting
+        uses: ./.github/actions/gwy/golint
+        with:
+          token: ${{ secrets.GWY_TOKEN_REPO }}
+
+      - name: Workflow Result
+        shell: bash
+        run: |
+          # Process Workflow Result
+          if [ "${{ steps.check-linting.outputs.result }}" != "success" ]; then
+            exit 1
+          fi
