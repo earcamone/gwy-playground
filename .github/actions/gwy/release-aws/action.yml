@@ -191,19 +191,24 @@ runs:
           echo " - Applying tag: $TAG"
           SAFE_TAG=$(echo "$TAG" | tr '-' '_')
           FULL_TAG="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$GWY_RELEASE_REPOSITORY:$TAG"
-          DOCKER_TAG=$(docker tag "$GWY_RELEASE_REPOSITORY" "$FULL_TAG" 2>&1)
+
+          DOCKER_TAG=$(docker tag "$GWY_RELEASE_REPOSITORY" "$FULL_TAG@@@" 2>&1)
+          DOCKER_TAG_RESULT=$?
+        
           echo "RAN_DOCKER_TAG_$SAFE_TAG=true" >> $GITHUB_ENV
           echo "DOCKER_TAG_$SAFE_TAG<<EOF" >> $GITHUB_ENV
           echo "$DOCKER_TAG" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
         
           DOCKER_PUSH=$(timeout "$GWY_TIMEOUT_SECONDS" docker push "$FULL_TAG" 2>&1)
+          DOCKER_PUSH_RESULT=$?
+        
           echo "RAN_DOCKER_PUSH_$SAFE_TAG=true" >> $GITHUB_ENV
           echo "DOCKER_PUSH_$SAFE_TAG<<EOF" >> $GITHUB_ENV
           echo "$DOCKER_PUSH" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
         
-          if [ $? -eq 0 ]; then
+          if [ $DOCKER_TAG_RESULT -eq 0 && $DOCKER_PUSH_RESULT -eq 0 ]; then
             echo "Image pushed with tag: $TAG" >&2
           else
             echo "Docker push failed for tag: $TAG" >&2
