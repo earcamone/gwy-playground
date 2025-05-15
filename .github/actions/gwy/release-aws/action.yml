@@ -42,33 +42,33 @@ runs:
 
           # save release specific error for later summary report section
           echo "GWY_RELEASE_ERROR<<EOF" >> $GITHUB_ENV
-          echo -e "Missing AWS symbol 'GWY_RELEASE_TOKEN' or 'GWY_RELEASE_REPOSITORY' for environment '${{ github.event.inputs.environment }}'" >> $GITHUB_ENV
+          echo -e "Missing AWS symbol 'GWY_RELEASE_TOKEN' or 'GWY_RELEASE_REPOSITORY' for '${{ github.event.inputs.environment }}' environment" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV        
           exit 0
         fi
 
         # Validate token format (expecting key:secret)
-        if ! echo "$GWY_RELEASE_TOKEN:::" | grep -q "^[^:]*:[^:]*$"; then
+        if ! echo "$GWY_RELEASE_TOKEN" | grep -q "^[^:]*:[^:]*$"; then
           echo "Invalid secret 'GWY_TOKEN_AWS' format, ensure key/secret is separated by ':' (key:secret). Kindly check documentation config section for more details" >&2
           echo "result=failed" >> $GITHUB_OUTPUT
-          echo "::error title=Invalid 'GWY_TOKEN_AWS' Token Format::token must be in 'key:secret' format for '${{ github.event.inputs.environment }}'."
+          echo "::error title=Invalid 'GWY_RELEASE_TOKEN' Token Format::secret token must be in 'key:secret' format for '${{ github.event.inputs.environment }}' environment"
         
           # save release specific error for later summary report section
           echo "GWY_RELEASE_ERROR<<EOF" >> $GITHUB_ENV
-          echo -e "Invalid token format for '${{ github.event.inputs.environment }}'" >> $GITHUB_ENV
+          echo -e "Invalid 'GWY_RELEASE_TOKEN' token format for '${{ github.event.inputs.environment }}' environment" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV        
           exit 0
         fi
 
         # Validate repository format (simple: alphanumeric, dashes, underscores)
-        if ! echo "$GWY_RELEASE_REPOSITORY" | grep -q "^[a-zA-Z0-9_-]\+$"; then
+        if ! echo "$GWY_RELEASE_REPOSITORY@" | grep -q "^[a-zA-Z0-9_-]\+$"; then
           echo "Invalid repository format. Expected alphanumeric with dashes/underscores, got: $GWY_RELEASE_REPOSITORY" >&2
           echo "result=failed" >> $GITHUB_OUTPUT
           echo "::error title=Invalid Repository Format::repository must be alphanumeric with dashes/underscores for environment '${{ github.event.inputs.environment }}'."
         
           # save release specific error for later summary report section
           echo "GWY_RELEASE_ERROR<<EOF" >> $GITHUB_ENV
-          echo -e "Invalid repository format for '${{ github.event.inputs.environment }}'" >> $GITHUB_ENV
+          echo -e "Invalid repository for '${{ github.event.inputs.environment }}' environment, must be alphanumeric with dashes/underscores" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV        
           exit 0
         fi
