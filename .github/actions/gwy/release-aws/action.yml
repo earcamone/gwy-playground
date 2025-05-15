@@ -200,7 +200,7 @@ runs:
           echo "$DOCKER_TAG" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
         
-          DOCKER_PUSH=$(timeout "$GWY_TIMEOUT_SECONDS" docker push "$FULL_TAG@@@" 2>&1)
+          DOCKER_PUSH=$(timeout "$GWY_TIMEOUT_SECONDS" docker push "$FULL_TAG" 2>&1)
           DOCKER_PUSH_RESULT=$?
         
           echo "RAN_DOCKER_PUSH_$SAFE_TAG=true" >> $GITHUB_ENV
