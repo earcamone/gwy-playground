@@ -208,7 +208,7 @@ runs:
           echo "$DOCKER_PUSH" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
         
-          if [ $DOCKER_TAG_RESULT -eq 0 && $DOCKER_PUSH_RESULT -eq 0 ]; then
+          if [ $DOCKER_TAG_RESULT -eq 0 ] && [ $DOCKER_PUSH_RESULT -eq 0 ]; then
             echo "Image pushed with tag: $TAG" >&2
           else
             echo "Docker push failed for tag: $TAG" >&2
