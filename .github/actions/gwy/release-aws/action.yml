@@ -133,12 +133,14 @@ runs:
         # Build Docker image
         echo "Building Docker image..." >&2
         DOCKER_BUILD=$(timeout "$GWY_TIMEOUT_SECONDS" docker build --build-arg VERSION="$GWY_APP_VERSION" -t "$GWY_RELEASE_REPOSITORY" . 2>&1)
+        DOCKER_BUILD_RESULT=$?
+        
         echo "RAN_DOCKER_BUILD=true" >> $GITHUB_ENV
         echo "DOCKER_BUILD<<EOF" >> $GITHUB_ENV
         echo "$DOCKER_BUILD" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
         
-        if [ $? -eq 0 ]; then
+        if [ $DOCKER_BUILD_RESULT -eq 0 ]; then
           echo "Docker build succeeded" >&2
         else
           echo "Docker build failed" >&2
