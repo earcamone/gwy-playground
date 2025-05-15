@@ -35,7 +35,7 @@ runs:
         echo "AWS_REGION=$AWS_REGION" >> $GITHUB_ENV
         
         # Validate required symbols
-        if [ -z "$GWY_RELEASE_TOKENX" ] || [ -z "$GWY_RELEASE_REPOSITORYX" ]; then
+        if [ -z "$GWY_RELEASE_TOKEN" ] || [ -z "$GWY_RELEASE_REPOSITORY" ]; then
           echo "Missing environment symbols for '${{ github.event.inputs.environment }}'" >&2
           echo "result=failed" >> $GITHUB_OUTPUT
           echo "::error title=Missing Symbols::Missing required AWS symbols (token or repository) for environment '${{ github.event.inputs.environment }}'."
@@ -48,7 +48,7 @@ runs:
         fi
 
         # Validate token format (expecting key:secret)
-        if ! echo "$GWY_RELEASE_TOKEN" | grep -q "^[^:]*:[^:]*$"; then
+        if ! echo "$GWY_RELEASE_TOKEN:::" | grep -q "^[^:]*:[^:]*$"; then
           echo "Invalid secret 'GWY_TOKEN_AWS' format, ensure key/secret is separated by ':' (key:secret). Kindly check documentation config section for more details" >&2
           echo "result=failed" >> $GITHUB_OUTPUT
           echo "::error title=Invalid 'GWY_TOKEN_AWS' Token Format::token must be in 'key:secret' format for '${{ github.event.inputs.environment }}'."
