@@ -61,7 +61,7 @@ runs:
         fi
 
         # Validate repository format (simple: alphanumeric, dashes, underscores)
-        if ! echo "$GWY_RELEASE_REPOSITORY@" | grep -q "^[a-zA-Z0-9_-]\+$"; then
+        if ! echo "$GWY_RELEASE_REPOSITORY" | grep -q "^[a-zA-Z0-9_-]\+$"; then
           echo "Invalid repository format. Expected alphanumeric with dashes/underscores, got: $GWY_RELEASE_REPOSITORY" >&2
           echo "result=failed" >> $GITHUB_OUTPUT
           echo "::error title=Invalid Repository Format::repository must be alphanumeric with dashes/underscores for environment '${{ github.event.inputs.environment }}'."
