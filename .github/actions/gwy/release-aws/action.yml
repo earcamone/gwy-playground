@@ -9,10 +9,6 @@ inputs:
     description: 'Release deployment region'
     required: true
 
-env:
-  REPO_CREATE: true
-  REPO_IMMUTABLE: true
-
 outputs:
   result:
     description: 'Release result (success or failed)'
@@ -80,14 +76,14 @@ runs:
         echo "EOF" >> $GITHUB_ENV
         
         if ! echo "$AWS_ECR_DESCRIBE" | grep -q '"repositoryName":'; then
-          if [ "$REPO_CREATE" != "true" ]; then
-            echo "ECR repository '$GWY_RELEASE_REPOSITORY' does not exist and REPO_CREATE is false" >&2
+          if [ "$GWY_REPO_CREATE" != "true" ]; then
+            echo "ECR repository '$GWY_RELEASE_REPOSITORY' does not exist and GWY_REPO_CREATE is false" >&2
             echo "result=failed" >> $GITHUB_OUTPUT
             echo "::error title=Repository Missing::ECR repository '$GWY_RELEASE_REPOSITORY' does not exist and auto-creation is disabled."
             echo "**ERROR**: ECR repository '$GWY_RELEASE_REPOSITORY' does not exist and auto-creation is disabled" >> $GWY_SUMMARY
             exit 0
           fi
-          IMMUTABILITY=$([[ "$REPO_IMMUTABLE" == "true" ]] && echo "IMMUTABLE" || echo "MUTABLE")
+          IMMUTABILITY=$([[ "$GWY_REPO_IMMUTABLE" == "true" ]] && echo "IMMUTABLE" || echo "MUTABLE")
           AWS_ECR_CREATE=$(aws ecr create-repository --region "$AWS_REGION" --repository-name "$GWY_RELEASE_REPOSITORY" --image-scanning-configuration scanOnPush=true --image-tag-mutability "$IMMUTABILITY" 2>&1)
           echo "RAN_AWS_ECR_CREATE=true" >> $GITHUB_ENV
           echo "AWS_ECR_CREATE<<EOF" >> $GITHUB_ENV

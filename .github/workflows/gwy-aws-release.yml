@@ -64,6 +64,29 @@ on:
         type: string
         default: '5m'
 
+# NOTE: This workflow is currently thought to be
+# run manually, next release, which will integrate
+# GTY (Go Terraform Yourself) Continuous Delivery
+# schemes, will update workflow to allow clients
+# to easily add the triggering of this workflow
+# with, for example, push events to master branch.
+
+env:
+  # Create application repository if un-existent?
+  # Set true if you want the workflow to create
+  # the ECR repository for app if un-existent.
+  GWY_REPO_CREATE: true
+
+  # Application repository creation properties:
+  # If app ECR repository is un-existent and
+  # GWY_REPO_CREATE was set true, do you want
+  # the repository to be immutable or not?
+  #
+  # NOTE: Immutable repos will reject upload
+  # of image with conflicting tag, otherwise,
+  # it will overwrite the existent image.
+  GWY_REPO_IMMUTABLE: true
+
 run-name: "[${{ github.workflow }}] @${{ github.actor }}"
 
 jobs:
