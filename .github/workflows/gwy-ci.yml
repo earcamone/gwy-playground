@@ -102,6 +102,7 @@ on:
   push:
     branches:
       - master
+      - bleh
 
   workflow_dispatch:
     inputs:
