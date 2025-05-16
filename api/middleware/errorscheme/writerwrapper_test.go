@@ -3,7 +3,7 @@ package errorscheme
 import (
 	"net/http/httptest"
 	"testing"
-	
+
 	"github.com/stretchr/testify/assert"
 )
 
