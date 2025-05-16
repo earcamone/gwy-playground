@@ -264,22 +264,28 @@ runs:
         
         cat $GWY_SUMMARY_HEADING > $GWY_ARTIFACT
         cat $GWY_RELEASE_SUMMARY >> $GWY_ARTIFACT
+
+        # some errors might be triggered concerning missing
+        # environment symbols without actually triggering
+        # any command, so avoid adding the markdown title
+        # in the summary if no commands have actually run :P
         
-        if [ "$RAN_AWS_ECR_DESCRIBE" = "true" ] || [ "$RAN_AWS_ECR_CREATE" = "true" ] || 
-          [ "$RAN_AWS_ECR_CREATE" = "true" ] || [ "$RAN_AWS_ECR_LOGIN" = "true" ] || 
-          [ "$RAN_DOCKER_BUILD" = "true" ] || [ "${!RAN_TAG_VAR}" = "true" ] || [ "${!RAN_PUSH_VAR}" = "true" ]; then
+        if [ "$RAN_AWS_ECR_DESCRIBE" = "true" ]; then
             echo -e "\n## Command Outputs\n  \n" >> $GWY_ARTIFACT
         fi
         
         if [ "$RAN_AWS_ECR_DESCRIBE" = "true" ]; then
           echo -e "### aws ecr describe-repositories\n  \n\`\`\`\n${AWS_ECR_DESCRIBE}\n\`\`\`\n" >> $GWY_ARTIFACT
         fi
+        
         if [ "$RAN_AWS_ECR_CREATE" = "true" ]; then
           echo -e "### aws ecr create-repository\n  \n\`\`\`\n${AWS_ECR_CREATE}\n\`\`\`\n" >> $GWY_ARTIFACT
         fi
+        
         if [ "$RAN_AWS_ECR_LOGIN" = "true" ]; then
           echo -e "### aws ecr get-login-password | docker login\n  \n\`\`\`\n${AWS_ECR_LOGIN}\n\`\`\`\n" >> $GWY_ARTIFACT
         fi
+        
         if [ "$RAN_DOCKER_BUILD" = "true" ]; then
           echo -e "### docker build\n  \n\`\`\`\n${DOCKER_BUILD}\n\`\`\`\n" >> $GWY_ARTIFACT
         fi
