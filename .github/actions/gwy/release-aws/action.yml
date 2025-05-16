@@ -35,7 +35,7 @@ runs:
         echo "AWS_REGION=$AWS_REGION" >> $GITHUB_ENV
         
         # Validate required symbols
-        if [ -z "$GWY_RELEASE_TOKEN" ] || [ -z "$GWY_RELEASE_REPOSITORY" ]; then
+        if [ ! -z "$GWY_RELEASE_TOKEN" ] || [ -z "$GWY_RELEASE_REPOSITORY" ]; then
           echo "Missing environment symbols for '${{ github.event.inputs.environment }}'" >&2
           echo "result=failed" >> $GITHUB_OUTPUT
           echo "::error title=Missing Symbols::Missing required AWS symbols (token or repository) for environment '${{ github.event.inputs.environment }}'."
@@ -264,7 +264,12 @@ runs:
         
         cat $GWY_SUMMARY_HEADING > $GWY_ARTIFACT
         cat $GWY_RELEASE_SUMMARY >> $GWY_ARTIFACT
-        echo -e "\n## Command Outputs\n  \n" >> $GWY_ARTIFACT
+        
+        if [ "$RAN_AWS_ECR_DESCRIBE" = "true" ] || [ "$RAN_AWS_ECR_CREATE" = "true" ] || 
+          [ "$RAN_AWS_ECR_CREATE" = "true" ] || [ "$RAN_AWS_ECR_LOGIN" = "true" ] || 
+          [ "$RAN_DOCKER_BUILD" = "true" ] || [ "${!RAN_TAG_VAR}" = "true" ] || [ "${!RAN_PUSH_VAR}" = "true" ]; then
+            echo -e "\n## Command Outputs\n  \n" >> $GWY_ARTIFACT
+        fi
         
         if [ "$RAN_AWS_ECR_DESCRIBE" = "true" ]; then
           echo -e "### aws ecr describe-repositories\n  \n\`\`\`\n${AWS_ECR_DESCRIBE}\n\`\`\`\n" >> $GWY_ARTIFACT
