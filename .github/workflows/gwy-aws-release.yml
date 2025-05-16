@@ -85,7 +85,7 @@ env:
   # NOTE: Immutable repos will reject upload
   # of image with conflicting tag, otherwise,
   # it will overwrite the existent image.
-  GWY_REPO_IMMUTABLE: true
+  GWY_REPO_IMMUTABLE: false
 
 run-name: "[${{ github.workflow }}] @${{ github.actor }}"
 
