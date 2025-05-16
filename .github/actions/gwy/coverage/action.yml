@@ -13,7 +13,7 @@ inputs:
   summary-threshold:
     description: 'Minimum coverage threshold (%) of functions showed in summary'
     required: false
-    default: '70'
+    default: '51'
 
 outputs:
   result:

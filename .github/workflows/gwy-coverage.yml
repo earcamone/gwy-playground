@@ -27,7 +27,7 @@ on:
         description: 'Show functions with less than? (%)'
         required: false
         type: string
-        default: '50'
+        default: '51'
 
 run-name: "[${{ github.workflow }}] @${{ github.actor }}"
 
