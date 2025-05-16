@@ -1,12 +1,12 @@
 package api
 
 import (
-	"github.com/earcamone/gapi/api/middleware/errorscheme"
+	"github.com/earcamone/gwy-playground/api/middleware/errorscheme"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	"github.com/earcamone/gapi/api/config"
-	"github.com/earcamone/gapi/api/routes/books"
+	"github.com/earcamone/gwy-playground/api/config"
+	"github.com/earcamone/gwy-playground/api/routes/books"
 )
 
 func New(c config.Config) chi.Router {

@@ -2,14 +2,14 @@ package books
 
 import (
 	"encoding/json"
-	"github.com/earcamone/gapi/api/middleware/errorscheme"
+	"github.com/earcamone/gwy-playground/api/middleware/errorscheme"
 	"net/http"
 	"path"
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/earcamone/gapi/api/config"
-	"github.com/earcamone/gapi/services/books"
+	"github.com/earcamone/gwy-playground/api/config"
+	"github.com/earcamone/gwy-playground/services/books"
 )
 
 func Books(c config.Config) chi.Router {
