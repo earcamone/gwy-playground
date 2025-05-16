@@ -2,13 +2,13 @@ package config
 
 import (
 	"fmt"
-	"github.com/earcamone/gapi/services/books"
+	"github.com/earcamone/gwy-playground/services/books"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/earcamone/gapi/api/middleware/errorscheme"
+	"github.com/earcamone/gwy-playground/api/middleware/errorscheme"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -1,4 +1,4 @@
-module github.com/earcamone/gapi
+module github.com/earcamone/gwy-playground
 
 go 1.23.4
 

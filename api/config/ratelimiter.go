@@ -3,7 +3,7 @@ package config
 import (
 	"crypto/md5"
 	"fmt"
-	"github.com/earcamone/gapi/api/middleware/ratelimiter"
+	"github.com/earcamone/gwy-playground/api/middleware/ratelimiter"
 	"net"
 	"net/http"
 	"strings"
