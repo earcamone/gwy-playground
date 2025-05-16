@@ -99,10 +99,6 @@ on:
     branches:
       - '*'
 
-  push:
-    branches:
-      - master
-
   workflow_dispatch:
     inputs:
       branch:
