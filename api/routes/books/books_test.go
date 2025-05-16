@@ -8,9 +8,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/earcamone/gapi/api/config"
-	"github.com/earcamone/gapi/api/middleware/errorscheme"
-	"github.com/earcamone/gapi/services/books"
+	"github.com/earcamone/gwy-playground/api/config"
+	"github.com/earcamone/gwy-playground/api/middleware/errorscheme"
+	"github.com/earcamone/gwy-playground/services/books"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 )
@@ -30,7 +30,7 @@ func setupRouter(c config.Config, errFn errorscheme.ErrResponseFn) http.Handler 
 
 	r.Use(errorscheme.ErrorScheme(errFn))
 	r.Mount("/", Books(c))
-	
+
 	return r
 }
 

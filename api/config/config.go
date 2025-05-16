@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/earcamone/gapi/api/middleware/errorscheme"
-	"github.com/earcamone/gapi/services/books"
+	"github.com/earcamone/gwy-playground/api/middleware/errorscheme"
+	"github.com/earcamone/gwy-playground/services/books"
 )
 
 type Config struct {

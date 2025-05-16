@@ -3,7 +3,7 @@ package ratelimiter
 import (
 	"context"
 	"fmt"
-	"github.com/earcamone/gapi/api/middleware/errorscheme"
+	"github.com/earcamone/gwy-playground/api/middleware/errorscheme"
 	"log"
 	"net/http"
 	"strconv"
