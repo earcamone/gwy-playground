@@ -3,7 +3,7 @@
 # Script to update CI files in ci-base and propagate to other branches
 
 # Configuration
-CI_INSTALL_URL="https://raw.githubusercontent.com/earcamone/gwy/assets/scripts/install-gwy.sh"
+CI_INSTALL_URL="https://raw.githubusercontent.com/earcamone/gwy-playground/assets/scripts/install-gwy.sh"
 BRANCHES=("master" "develop" "feature/no-ref/simple-bogus-success-app" "feature/no-ref/gwy-alerts-trigger")
 DRY_RUN=false
 
