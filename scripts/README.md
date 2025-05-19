@@ -33,4 +33,3 @@
 3. Do whatever manual tests are required and never forget to run `run-jobs.sh` 
    script and check the dozens of workflows triggered manually to ensure all 
    workflows are working correctly.
-4. 
