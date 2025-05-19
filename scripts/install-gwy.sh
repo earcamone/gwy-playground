@@ -16,7 +16,7 @@ if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 fi
 
 # Temporary directory for cloning
-BRANCH="feature/no-ref/badges-count-fix"
+BRANCH="feature/no-ref/badges-release-branches-addition"
 TMP_DIR="/tmp/ci-tmp"
 REPO_URL="https://github.com/earcamone/gwy.git"
 
